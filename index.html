@@ -1,123 +1,160 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Tabuada Simples</title>
-
-  <style>
-    body {
-    font-family: "font-stretch: extra-expanded", cursive;
-    
-    margin: 25px auto;
-    padding: auto;
-    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-  }
-
-  h1 {
-    margin-top: 0%;
-    color: #000000;
-    margin: 17%;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-  }
-
-  h2 {
-    margin-top: 30px;
-    color: #000000;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-  }    
-
-  h3 {
-    margin-top: 30px;
-    color: #000000;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-  }
-
-  input, button {
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #000000;
-    border-radius: 8px;
-  }
-
-  button {
-    background-color: #000000;
-    color: rgb(255, 255, 255);
-    cursor:crosshair;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    transition: 0.3s;
-  }
-
-  button:hover {
-    background-color: #ffffff;
-  }
-
-  .caixa {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 40px;
-  margin: 0px auto;      
-  box-shadow: 0 10px 265px rgba(255,0,0,0.6); 
-  width: 80%;             
-  max-width: 100%;       
-  display: flex;              
-  flex-direction: column;      
-  align-items: center;         
-}
-
-  ul {
-    list-style: none;
-    padding: 0%;
-  }
-
-  li {
-    margin: 10px 0;
-    color: #222;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-  }
-
-  
-  #resultado {
-  columns: 5;       
-  column-gap: 0cap;   
-}
-  </style>
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriPortal — Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  </head>
 <body>
-
-  <div class="caixa">
-    <h2>Tabuada do Número</h2>
-    <p>tabuado de 1 a 100:</p>
+  <aside class="sidebar">
+    <h2 class="logo">NutriPortal</h2>
+    <nav>
+      <!-- A classe 'active' será adicionada dinamicamente pelo main.js -->
+      <a href="index.html" class="[active_index]">😮‍💨.Perfil</a>
+      <a href="registro.html" class="[active_registro]">🗃️.Registro</a>
+      <a href="progresso.html" class="[active_progresso]">📈.Progresso</a>
+    </nav>
     
-    <input type="number" id="numero" placeholder="Digite aqui...">
-    <button onclick="mostrarTabuada()">Gerar Tabuada</button>
+    <div class="settings-controls">
+      <h4>Visual</h4>
+      <div class="control-group">
+        <label>Modo Escuro:</label>
+        <button id="toggle-dark-mode" class="icon-btn">💡</button>
+      </div>
+      <div class="control-group">
+        <label>Tamanho da Fonte:</label>
+        <button id="font-size-decrease" class="icon-btn">-</button>
+        <button id="font-size-increase" class="icon-btn">+</button>
+      </div>
+    </div>
+    
+    <div class="settings-controls">
+        <h4>Dados</h4>
+        <div class="control-group">
+            <button id="novo-usuario-btn" class="btn secondary full-width">Novo Usuário (Limpar Dados)</button>
+        </div>
+    </div>
+  </aside>
 
-    <h3>Resultado:</h3>
-    <ul id="resultado"></ul>
-  </div>
+  <main class="main-content">
+    
+    <header>
+      <h1>Seu Perfil e Metas Calóricas</h1>
+      <p class="header-date" id="today-date"></p>
+    </header>
 
-  <script>
-    function mostrarTabuada() {
+    <!-- CARD 1: Configurar Perfil -->
+    <section class="card">
+      <h3>Configurar Perfil</h3>
+      <form id="perfil-form">
+        <div class="input-row">
+            
+          <div class="input-group">
+            <label for="sexo">Sexo:</label>
+            <select id="sexo" required>
+              <option value="">Selecione</option>
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+            </select>
+          </div>
 
-      var numero = document.getElementById("numero").value;
-  
-      var resultado = document.getElementById("resultado");
+          <div class="input-group">
+            <label for="idade">Idade:</label>
+            <input type="number" id="idade" min="15" max="100" required />
+          </div>
 
-      resultado.innerHTML = "";
+          <div class="input-group">
+            <label for="peso">Peso (kg):</label>
+            <input type="number" id="peso" step="0.1" required />
+          </div>
 
-      if (numero === "") {
-        resultado.innerHTML = "<li>digite um número de 1 a 100.</li>";
-        return;
-      }
+          <div class="input-group">
+            <label for="altura">Altura (cm):</label>
+            <input type="number" id="altura" required />
+          </div>
 
-      
-      for (var i = 1; i <= 100; i++) {
-        var item = numero + " x " + i + " = " + (numero * i);
-        var li = document.createElement("li");
-        li.textContent = item;
-        resultado.appendChild(li);
-      }
-    }
-  </script>
+        </div>
 
+        <label for="atividade">Nível de Atividade:</label>
+        <select id="atividade" required>
+          <option value="sedentario">Sedentário</option>
+          <option value="leve">Leve (1-3 dias/semana)</option>
+          <option value="moderada">Moderada (3-5 dias/semana)</option>
+          <option value="intensa">Intensa (6-7 dias/semana)</option>
+        </select>
+
+        <button type="submit" class="btn">Salvar Perfil</button>
+      </form>
+    </section>
+
+    <!-- CARD 2: Resultados e Objetivos (TMB, Manutenção, Meta) -->
+    <section class="card">
+      <h3>Resultados e Objetivos</h3>
+      <div class="grid-cards">
+        
+        <div class="small-card">
+            <h4 class="tooltip-title-wrapper">
+                TMB
+                <span class="tooltip-icon" 
+                      title="Taxa Metabólica Basal. É a energia que seu corpo gasta em repouso (dormindo ou deitado) para manter as funções vitais (respiração, circulação, etc.).">
+                    (?)
+                </span>
+            </h4>
+            <p id="tmb-resultado">--</p>
+        </div>
+
+        <div class="small-card">
+            <h4 class="tooltip-title-wrapper">
+                Manutenção
+                <span class="tooltip-icon" 
+                      title="Total de calorias que seu corpo precisa para MANTER o peso atual, considerando a TMB mais a atividade física diária.">
+                    (?)
+                </span>
+            </h4>
+            <p id="manutencao-resultado">--</p>
+        </div>
+
+        <div class="small-card">
+            <h4 class="tooltip-title-wrapper">
+                Meta (-500 kcal)
+                <span class="tooltip-icon" 
+                      title="É a sua meta calórica diária para PERDA de peso. Calculada como Manutenção menos um déficit de 500 kcal.">
+                    (?)
+                </span>
+            </h4>
+            <p id="meta-resultado">--</p>
+        </div>
+
+      </div>
+    </section>
+    
+    <!-- CARD 3: Progresso Diário (Barra) -->
+    <section class="card progress-card hidden" id="card-progress">
+        <h3 class="flex justify-between">
+            Progresso de Hoje
+            <a href="#" id="card-link" class="link-small">Registrar Refeição →</a>
+        </h3>
+        
+        <div class="progress-bar-container">
+            <!-- Esta é a barra cheia -->
+            <div class="progress-inner" id="progress-inner" style="width: 0%;"></div>
+        </div>
+        
+        <div class="progress-details">
+            <p class="total-calorias-display">
+                <span id="consumido-do-dia">0</span>/<span id="meta-do-dia">--</span> kcal
+            </p>
+            <p class="info-text" id="progress-text">
+                Defina seu perfil para calcular a meta.
+            </p>
+        </div>
+    </section>
+
+  </main>
+
+  <!-- Carregamento dos scripts. main.js deve vir antes de dashboard.js -->
+  <script src="js/main.js"></script>
+  <script src="js/dashboard.js"></script>
 </body>
 </html>
