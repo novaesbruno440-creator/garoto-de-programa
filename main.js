@@ -37,8 +37,54 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(key, JSON.stringify(data));
     }
 
+    /**
+     * Função Centralizada para Chamar a API Gemini
+     * @param {string} prompt Texto do prompt.
+     * @returns {Promise<string>} O texto da resposta do modelo.
+     */
+    async function fetchGeminiResponse(prompt) {
+        const apiKey = ""; // Chave injetada pelo ambiente
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }]
+        };
+
+        const maxRetries = 3;
+        let attempt = 0;
+
+        while (attempt < maxRetries) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Não consegui gerar uma resposta.";
+            } catch (error) {
+                attempt++;
+                console.warn(`Tentativa ${attempt} falhou.`, error);
+                if (attempt >= maxRetries) {
+                    throw error;
+                }
+                // Backoff exponencial simples
+                await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+            }
+        }
+    }
+    
+    // Expor função Gemini globalmente
+    window.fetchGeminiResponse = fetchGeminiResponse;
+
     // Inicialização do estado do App
     window.appState = {
+        auth: loadData('nutriportal_auth', { isAuthenticated: false, user: null }), // Estado de Autenticação
         perfil: loadData('nutriportal_perfil', null),
         refeicoes: loadData('nutriportal_refeicoes', []), // {data: 'YYYY-MM-DD', descricao: '...', calorias: 500, tipo: 'almoco', id: 'uuid'}
         ui: loadData('nutriportal_ui', {
@@ -53,7 +99,55 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadData = loadData;
 
     // ===============================================
-    // 2. Funcionalidades de UI (Modo Escuro, Fonte)
+    // 2. Sistema de Autenticação e Cabeçalho
+    // ===============================================
+
+    function updateAuthUI() {
+        const authContainer = document.getElementById('auth-container');
+        if (!authContainer) return; // Se não estiver em uma página com header (ex: login)
+
+        const { isAuthenticated, user } = window.appState.auth;
+
+        if (isAuthenticated && user) {
+            // Usuário Logado
+            authContainer.innerHTML = `
+                <div class="auth-widget">
+                    <div class="auth-user-info">
+                        <span class="auth-name">Olá, ${user.name}</span>
+                        <span class="auth-status">Online</span>
+                    </div>
+                    <button id="btn-logout" class="auth-btn-logout" title="Sair">
+                        ➔
+                    </button>
+                </div>
+            `;
+            
+            // Event listener para Logout
+            document.getElementById('btn-logout').addEventListener('click', logoutUser);
+        } else {
+            // Usuário Não Logado
+            authContainer.innerHTML = `
+                <div class="auth-widget">
+                    <span class="auth-status" style="color: var(--text-secondary);">Visitante</span>
+                    <a href="login.html" class="auth-btn-login">Entrar →</a>
+                </div>
+            `;
+        }
+    }
+
+    function logoutUser() {
+        if(confirm("Deseja realmente sair?")) {
+            window.appState.auth = { isAuthenticated: false, user: null };
+            saveData('nutriportal_auth', window.appState.auth);
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Inicializa a UI de autenticação
+    updateAuthUI();
+
+    // ===============================================
+    // 3. Funcionalidades de UI (Modo Escuro, Fonte)
     // ===============================================
 
     /**
@@ -127,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ===============================================
-    // 3. Funcionalidade de Limpar Dados
+    // 4. Funcionalidade de Limpar Dados
     // ===============================================
 
     const novoUsuarioBtn = document.getElementById('novo-usuario-btn');
@@ -136,9 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm('Tem certeza que deseja limpar TODOS os seus dados (Perfil, Refeições, Progresso)? Esta ação é irreversível.')) {
                 localStorage.removeItem('nutriportal_perfil');
                 localStorage.removeItem('nutriportal_refeicoes');
-                localStorage.removeItem('nutriportal_ui'); // Poderia manter, mas limpar tudo é mais seguro
+                // Mantemos o auth e UI
+                
                 alert('Dados limpos com sucesso! Redirecionando para a página inicial.');
-                window.location.href = 'index.html'; // Redireciona para recarregar o app
+                window.location.href = 'index.html'; // Redireciona para recarregar o app e limpar estados
             }
         });
     }

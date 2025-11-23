@@ -40,13 +40,17 @@
   <main class="main-content">
     
     <header>
-      <h1>Seu Perfil e Metas Calóricas</h1>
-      <p class="header-date" id="today-date"></p>
+      <div>
+          <h1>Seu Perfil</h1>
+          <p class="header-date" id="today-date"></p>
+      </div>
+      <!-- Container para o Widget de Autenticação (Login/Logout) -->
+      <div id="auth-container"></div>
     </header>
 
     <!-- CARD 1: Configurar Perfil -->
     <section class="card">
-      <h3>Configurar Perfil</h3>
+      <h3>Configurar Perfil e Metas</h3>
       <form id="perfil-form">
         <div class="input-row">
             
@@ -127,6 +131,21 @@
         </div>
 
       </div>
+    </section>
+    
+    <!-- CARD IA: Sugestão de Cardápio -->
+    <section class="card card-ai hidden" id="ai-meal-plan-card">
+        <h3>✨ Planejamento Inteligente</h3>
+        <p style="margin-bottom: 15px; color: var(--text-secondary);">
+            Com base na sua meta calórica de <strong id="ai-meta-display">--</strong> kcal, peça para a IA sugerir um cardápio para hoje.
+        </p>
+        <button id="btn-generate-plan" class="btn btn-ai full-width">
+            Gerar Sugestão de Cardápio ✨
+        </button>
+        
+        <div id="ai-plan-result" class="ai-result-box hidden">
+            <!-- O resultado da IA será injetado aqui -->
+        </div>
     </section>
     
     <!-- CARD 3: Progresso Diário (Barra) -->

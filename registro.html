@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NutriPortal — Registro</title>
+  <title>NutriPortal — Progresso</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <aside class="sidebar">
@@ -38,69 +39,52 @@
 
   <main class="main-content">
     <header>
-      <h1>Registro Diário de Refeições</h1>
-      <p class="header-date" id="today-date"></p>
+        <div>
+            <h1>Progresso Semanal</h1>
+        </div>
+        <div id="auth-container"></div>
     </header>
 
-    <!-- NOVO CARD: Resumo de Calorias do Dia -->
     <section class="card summary-registro-card">
-        <h3 class="summary-title">Consumo de Hoje: <span id="meta-diaria">--</span> kcal</h3>
+        <h3>Meta vs Consumo (Hoje)</h3>
         <p class="total-calorias-display">
-            <strong id="consumo-diario-registro">0</strong> kcal
+            <strong id="consumido-hoje-prog">0</strong> kcal
         </p>
         <p class="info-text">
-            Restam <span id="calorias-restantes">--</span> kcal para atingir a meta diária.
+            Consumido de <span id="meta-hoje-prog">--</span> kcal da Meta Diária.
         </p>
     </section>
 
-    <div class="grid-layout-registro">
+    <section class="card">
+      <h3>Consumo Calórico — Últimos 7 dias</h3>
+      <canvas id="consumoChart"></canvas>
+    </section>
+
+    <section class="card">
+      <h3>Outros Indicadores (Futuro)</h3>
+      <div class="grid-cards">
         
-        <section class="card">
-          <h3>Adicionar Alimento</h3>
-          <form id="registro-form">
-            
-            <label for="descricao">Descrição (Ex: Frango Grelhado):</label>
-            <input type="text" id="descricao" required />
+        <div class="small-card">
+            <h4>Peso Atual</h4>
+            <p id="peso-atual">-- kg</p>
+        </div>
 
-            <div class="input-row" style="margin-top: 15px;">
-              <div class="input-group">
-                <label for="calorias">Calorias (kcal):</label>
-                <input type="number" id="calorias" min="1" required />
-              </div>
+        <div class="small-card">
+            <h4>Diferença Semanal</h4>
+            <p id="diferenca-semanal">-- kg</p>
+        </div>
 
-              <div class="input-group">
-                <label for="tipo">Tipo:</label>
-                <select id="tipo" required>
-                  <option value="cafe">Café da Manhã</option>
-                  <option value="almoco">Almoço</option>
-                  <option value="janta">Jantar</option>
-                  <option value="lanche">Lanche/Outro</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="buttons">
-              <button type="submit" class="btn">Registrar</button>
-              <button type="button" id="cancelar-edicao" class="btn secondary hidden">Cancelar Edição</button>
-            </div>
-          </form>
-        </section>
+        <div class="small-card">
+            <h4>Próxima Meta</h4>
+            <p id="proxima-meta">--</p>
+        </div>
 
-        <section class="card">
-          <h3>Refeições de Hoje</h3>
-          <ul id="lista-refeicoes" class="meal-list">
-            <p class="empty-state">Nenhum alimento registrado ainda.</p>
-          </ul>
-          
-          <div class="buttons">
-              <button type="button" id="limpar-registros-btn" class="btn secondary full-width hidden">Limpar Todos os Registros do Dia</button>
-          </div>
-        </section>
+      </div>
+    </section>
 
-    </div> <!-- Fim do grid-layout-registro -->
   </main>
 
   <script src="main.js"></script>
-  <script src="registro.js"></script>
+  <script src="progresso.js"></script>
 </body>
 </html>

@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardProgress = document.getElementById('card-progress');
     const cardLink = document.getElementById('card-link');
     
+    // Elementos IA
+    const aiCard = document.getElementById('ai-meal-plan-card');
+    const aiMetaDisplay = document.getElementById('ai-meta-display');
+    const btnGeneratePlan = document.getElementById('btn-generate-plan');
+    const aiPlanResult = document.getElementById('ai-plan-result');
+    
     // ===============================================
     // 1. Funções de Cálculo (TMB e Meta)
     // ===============================================
@@ -28,9 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {number} TMB em kcal.
      */
     function calcularTMB(sexo, peso, altura, idade) {
-        // Fórmula de Mifflin-St Jeor:
-        // Homens: (10 * Peso) + (6.25 * Altura) - (5 * Idade) + 5
-        // Mulheres: (10 * Peso) + (6.25 * Altura) - (5 * Idade) - 161
         if (sexo === 'M') {
             return (10 * peso) + (6.25 * altura) - (5 * idade) + 5;
         } else if (sexo === 'F') {
@@ -41,9 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Calcula as Calorias de Manutenção e a Meta de Emagrecimento.
-     * @param {number} tmb TMB calculada.
-     * @param {string} atividade Nível de atividade ('sedentario', 'leve', 'moderada', 'intensa').
-     * @returns {{manutencao: number, meta: number}}
      */
     function calcularMetas(tmb, atividade) {
         const fatorAtividade = {
@@ -93,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Limpa resultados se não houver perfil
         if (!perfil || !perfil.peso || !perfil.altura || !perfil.idade) {
             Object.values(resultados).forEach(el => el.textContent = '--');
-            cardProgress.classList.add('hidden'); // Esconde o card de progresso se não houver meta
+            cardProgress.classList.add('hidden');
+            if(aiCard) aiCard.classList.add('hidden');
             return;
         }
 
@@ -110,35 +111,35 @@ document.addEventListener('DOMContentLoaded', () => {
         resultados.manutencao.textContent = `${manutencao} kcal`;
         resultados.meta.textContent = `${meta} kcal`;
         
+        // Exibe card de IA
+        if(aiCard) {
+            aiCard.classList.remove('hidden');
+            aiMetaDisplay.textContent = meta;
+        }
+        
         // 3. Atualiza o Progresso Hoje
         atualizarProgressoDiario(meta);
     }
 
     /**
      * Calcula o total de calorias consumidas hoje e atualiza a barra de progresso.
-     * @param {number} metaDiaria A meta de calorias definida no perfil.
      */
     function atualizarProgressoDiario(metaDiaria) {
         const hoje = window.getTodayDateString();
-        // Filtra as refeições de hoje
         const refeicoesHoje = window.appState.refeicoes.filter(r => r.data === hoje);
-        // Soma as calorias
         const totalCalorias = refeicoesHoje.reduce((acc, curr) => acc + Number(curr.calorias), 0);
         
-        // Atualiza o DOM (Progress Card)
         if (!cardProgress) return;
 
         cardProgress.classList.remove('hidden');
         cardProgress.querySelector('#meta-do-dia').textContent = metaDiaria;
         cardProgress.querySelector('#consumido-do-dia').textContent = totalCalorias;
         
-        // Cálculo da Porcentagem
         const porcentagem = (totalCalorias / metaDiaria) * 100;
-        const progresso = Math.min(porcentagem, 200); // Limita a 200% para visual
+        const progresso = Math.min(porcentagem, 200);
 
         progressInner.style.width = `${progresso}%`;
         
-        // Controle da cor de Alerta e Mensagem
         progressInner.classList.remove('over-limit');
         if (porcentagem > 100) {
             progressInner.classList.add('over-limit');
@@ -147,38 +148,67 @@ document.addEventListener('DOMContentLoaded', () => {
             progressText.textContent = `${metaDiaria - totalCalorias} kcal restantes para a meta.`;
         }
         
-        // Ação do botão
         cardLink.href = 'registro.html';
     }
 
 
     // ===============================================
-    // 3. Event Listeners
+    // 3. Event Listeners e IA
     // ===============================================
 
     if (perfilForm) {
-        // Envio do formulário
         perfilForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            // Coleta os dados do formulário
             const novoPerfil = {
                 sexo: document.getElementById('sexo').value,
                 idade: Number(document.getElementById('idade').value),
                 peso: Number(document.getElementById('peso').value),
                 altura: Number(document.getElementById('altura').value),
                 atividade: document.getElementById('atividade').value,
-                // A metaDiaria será calculada e adicionada em exibirResultados()
             };
 
-            // Salva o novo perfil no appState e LocalStorage
             window.appState.perfil = novoPerfil;
             saveData('nutriportal_perfil', novoPerfil);
 
-            // Recalcula e exibe os resultados
             exibirResultados();
-
             alert('Perfil e Metas salvos com sucesso!');
+        });
+    }
+    
+    // Funcionalidade IA: Gerar Cardápio
+    if (btnGeneratePlan) {
+        btnGeneratePlan.addEventListener('click', async () => {
+            const perfil = window.appState.perfil;
+            if (!perfil || !perfil.metaDiaria) {
+                alert("Por favor, configure seu perfil primeiro.");
+                return;
+            }
+
+            // Feedback Visual de Carregamento
+            const originalText = btnGeneratePlan.innerHTML;
+            btnGeneratePlan.innerHTML = '<span class="ai-loading"></span> Gerando sugestões...';
+            btnGeneratePlan.disabled = true;
+            aiPlanResult.classList.remove('hidden');
+            aiPlanResult.innerHTML = '<p>A IA está pensando em opções deliciosas para você...</p>';
+
+            try {
+                // Prompt para o Gemini
+                const prompt = `Atue como um nutricionista. Minha meta diária é de aproximadamente ${perfil.metaDiaria} calorias. Crie uma sugestão de cardápio simples e saudável para um dia (Café da Manhã, Almoço, Lanche, Jantar) em Português do Brasil. Use formato HTML simples com <ul> e <li>. Não inclua texto introdutório, apenas o cardápio.`;
+                
+                // Chamada da API (função global em main.js)
+                const resposta = await window.fetchGeminiResponse(prompt);
+                
+                // Renderizar resposta
+                aiPlanResult.innerHTML = `<h4>💡 Sugestão para Hoje</h4>${resposta}`;
+
+            } catch (error) {
+                console.error(error);
+                aiPlanResult.innerHTML = `<p style="color: var(--color-alert)">Desculpe, ocorreu um erro ao consultar a IA. Tente novamente.</p>`;
+            } finally {
+                btnGeneratePlan.innerHTML = originalText;
+                btnGeneratePlan.disabled = false;
+            }
         });
     }
 
