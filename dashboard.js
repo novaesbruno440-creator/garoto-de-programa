@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Atualiza o perfil com a meta calculada
         window.appState.perfil.metaDiaria = meta;
-        saveData('nutriportal_perfil', window.appState.perfil);
+        saveData('PERSONALfit_perfil', window.appState.perfil);
 
         // 2. Exibe Resultados
         resultados.tmb.textContent = `${Math.round(tmb)} kcal`;
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             window.appState.perfil = novoPerfil;
-            saveData('nutriportal_perfil', novoPerfil);
+            saveData('PERSONALfit_perfil', novoPerfil);
 
             exibirResultados();
             alert('Perfil e Metas salvos com sucesso!');

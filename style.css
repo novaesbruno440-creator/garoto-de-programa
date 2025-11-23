@@ -20,6 +20,10 @@
   --color-success: var(--primary-color);
   --color-alert: #d80a0a; /* Vermelho Alerta */
   
+  /* Cores Específicas para IA */
+  --ai-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --ai-light: #eef2ff;
+  
   /* Variáveis de Espaçamento e Borda */
   --spacing-unit: 8px;
   --border-radius: 12px;
@@ -36,6 +40,8 @@ body.dark-mode {
   --primary-dark: #06b6d4; /* Azul Ciano/Contraste */
   --shadow-color: rgba(0, 0, 0, 0.5); /* Sombra mais forte no escuro */
   --border-color: #4b5563; /* Borda discreta */
+  
+  --ai-light: #312e81; /* Fundo IA escuro */
 }
 
 /* Tamanho da Fonte (Acessibilidade) */
@@ -184,6 +190,9 @@ body {
 
 header {
   margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 header h1 {
@@ -198,6 +207,65 @@ header h1 {
   margin-top: 5px;
 }
 
+/* AUTH WIDGET NO HEADER */
+.auth-widget {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: var(--bg-card);
+    padding: 8px 15px;
+    border-radius: 50px; /* Pill shape */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.auth-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.auth-name {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--text-principal);
+}
+
+.auth-status {
+    font-size: 0.75em;
+    color: var(--primary-dark);
+}
+
+.auth-btn-logout {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.auth-btn-logout:hover {
+    background-color: var(--bg-principal);
+    color: var(--color-alert);
+}
+
+.auth-btn-login {
+    text-decoration: none;
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.auth-btn-login:hover {
+    text-decoration: underline;
+}
+
+/* CARD GERAL */
 .card {
   background-color: var(--bg-card);
   padding: 24px;
@@ -269,7 +337,9 @@ header h1 {
 
 /* Estilo para garantir que rótulos e campos dentro do grid fiquem com bom aspecto */
 .card .input-row label,
-.card form > label {
+.card form > label,
+.login-form label,
+.card .ai-input-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
@@ -279,7 +349,9 @@ header h1 {
 /* Garante que os campos de input e select preencham o espaço do grid */
 .card .input-row input,
 .card .input-row select,
-.card form > select {
+.card form > select,
+.login-form input,
+.card textarea {
     width: 100%;
     padding: 12px; /* Aumenta o padding para campos mais fáceis de clicar/tocar */
     border: 1px solid var(--border-color);
@@ -291,9 +363,16 @@ header h1 {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.card textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
 .card .input-row input:focus,
 .card .input-row select:focus,
-.card form > select:focus {
+.card form > select:focus,
+.login-form input:focus,
+.card textarea:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
 }
@@ -310,6 +389,9 @@ header h1 {
   color: #fff;
   transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
   margin-top: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn:hover {
@@ -334,6 +416,17 @@ header h1 {
     width: 100%;
 }
 
+.btn.outline {
+    background-color: transparent;
+    border: 2px solid var(--primary-dark);
+    color: var(--primary-dark);
+}
+
+.btn.outline:hover {
+    background-color: var(--primary-dark);
+    color: #fff;
+}
+
 .icon-btn {
     background: var(--bg-principal);
     border: 1px solid var(--border-color);
@@ -349,9 +442,143 @@ header h1 {
     border-color: var(--primary-dark);
 }
 
+/* BOTÃO & CARD COM EFEITO DE IA 
+*/
+.btn-ai {
+    background: var(--ai-gradient);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ai:hover {
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    filter: brightness(1.1);
+}
+
+.card-ai {
+    border: 2px solid transparent;
+    background-image: linear-gradient(var(--bg-card), var(--bg-card)), var(--ai-gradient);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    position: relative;
+}
+
+.card-ai h3 {
+    border-bottom-color: #a855f7;
+    color: #a855f7;
+}
+
+.ai-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-result-box {
+    background-color: var(--ai-light);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.ai-result-box h4 {
+    color: #6d28d9;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.ai-result-box ul {
+    list-style-position: inside;
+    margin-left: 10px;
+}
+
+.ai-result-box li {
+    margin-bottom: 5px;
+    color: var(--text-principal);
+}
+
+
 /*
   ====================================
-  5. Progresso Diário (Dashboard)
+  5. Login Page (Novo)
+  ====================================
+*/
+body.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    background-color: var(--bg-principal);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+}
+
+.login-logo {
+    font-size: 2em;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+    display: block;
+    text-decoration: none;
+}
+
+.login-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+}
+
+.login-footer {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.link-highlight {
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.link-highlight:hover {
+    text-decoration: underline;
+}
+
+/*
+  ====================================
+  6. Progresso Diário (Dashboard)
   ====================================
 */
 
@@ -423,7 +650,7 @@ header h1 {
 
 /*
   ====================================
-  6. Lista de Refeições (Registro)
+  7. Lista de Refeições (Registro)
   ====================================
 */
 .meal-list {
@@ -508,12 +735,17 @@ header h1 {
 
 /*
   ====================================
-  7. Responsividade
+  8. Responsividade
   ====================================
 */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
+    }
+    
+    body.login-page {
+        padding: 15px;
+        height: 100vh; /* Mantém full height no login */
     }
 
     .sidebar {
@@ -577,6 +809,16 @@ header h1 {
 
     .main-content {
         padding: 20px 15px;
+    }
+    
+    header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .auth-widget {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .card .input-row {

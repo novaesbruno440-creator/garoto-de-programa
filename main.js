@@ -84,10 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicialização do estado do App
     window.appState = {
-        auth: loadData('nutriportal_auth', { isAuthenticated: false, user: null }), // Estado de Autenticação
-        perfil: loadData('nutriportal_perfil', null),
-        refeicoes: loadData('nutriportal_refeicoes', []), // {data: 'YYYY-MM-DD', descricao: '...', calorias: 500, tipo: 'almoco', id: 'uuid'}
-        ui: loadData('nutriportal_ui', {
+        auth: loadData('PERSONALfit_auth', { isAuthenticated: false, user: null }), // Estado de Autenticação
+        perfil: loadData('PERSONALfit_perfil', null),
+        refeicoes: loadData('PERSONALfit_refeicoes', []), // {data: 'YYYY-MM-DD', descricao: '...', calorias: 500, tipo: 'almoco', id: 'uuid'}
+        ui: loadData('PERSONALfit_ui', {
             darkMode: false,
             fontSize: 'normal' // 'normal', 'large', 'small'
         }),
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function logoutUser() {
         if(confirm("Deseja realmente sair?")) {
             window.appState.auth = { isAuthenticated: false, user: null };
-            saveData('nutriportal_auth', window.appState.auth);
+            saveData('PERSONALfit_auth', window.appState.auth);
             window.location.href = 'login.html';
         }
     }
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleDarkModeBtn) {
         toggleDarkModeBtn.addEventListener('click', () => {
             window.appState.ui.darkMode = !window.appState.ui.darkMode;
-            saveData('nutriportal_ui', window.appState.ui);
+            saveData('PERSONALfit_ui', window.appState.ui);
             applyUIState();
         });
     }
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fontSizeIncreaseBtn) {
         fontSizeIncreaseBtn.addEventListener('click', () => {
             window.appState.ui.fontSize = window.appState.ui.fontSize === 'normal' ? 'large' : 'large';
-            saveData('nutriportal_ui', window.appState.ui);
+            saveData('PERSONALfit_ui', window.appState.ui);
             applyUIState();
         });
     }
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (fontSizeDecreaseBtn) {
         fontSizeDecreaseBtn.addEventListener('click', () => {
             window.appState.ui.fontSize = window.appState.ui.fontSize === 'normal' ? 'small' : 'small';
-            saveData('nutriportal_ui', window.appState.ui);
+            saveData('PERSONALfit_ui', window.appState.ui);
             applyUIState();
         });
     }
@@ -228,8 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (novoUsuarioBtn) {
         novoUsuarioBtn.addEventListener('click', () => {
             if (confirm('Tem certeza que deseja limpar TODOS os seus dados (Perfil, Refeições, Progresso)? Esta ação é irreversível.')) {
-                localStorage.removeItem('nutriportal_perfil');
-                localStorage.removeItem('nutriportal_refeicoes');
+                localStorage.removeItem('PERSONALfit_perfil');
+                localStorage.removeItem('PERSONALfit_refeicoes');
                 // Mantemos o auth e UI
                 
                 alert('Dados limpos com sucesso! Redirecionando para a página inicial.');

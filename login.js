@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 // Salva persistência
-                window.saveData('nutriportal_auth', window.appState.auth);
+                window.saveData('PERSONALfit_auth', window.appState.auth);
 
                 // Feedback visual rápido
                 const btn = loginForm.querySelector('button[type="submit"]');
@@ -57,12 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (novoUsuarioConfirm) {
                  // Limpa dados antigos para começar do zero
-                 localStorage.removeItem('nutriportal_perfil');
-                 localStorage.removeItem('nutriportal_refeicoes');
+                 localStorage.removeItem('PERSONALfit_perfil');
+                 localStorage.removeItem('PERSONALfit_refeicoes');
                  
                  const fakeUser = {
                     name: 'Novo Usuário',
-                    email: 'novo@nutriportal.com',
+                    email: 'novo@PERSONALfit.com',
                     id: 'new_user_' + new Date().getTime()
                 };
 
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     isAuthenticated: true,
                     user: fakeUser
                 };
-                window.saveData('nutriportal_auth', window.appState.auth);
+                window.saveData('PERSONALfit_auth', window.appState.auth);
                 
                 window.location.href = 'index.html';
             }

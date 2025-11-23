@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Refeição registrada!');
             }
 
-            window.saveData('nutriportal_refeicoes', window.appState.refeicoes);
+            window.saveData('PERSONALfit_refeicoes', window.appState.refeicoes);
             renderizarListaRefeicoes();
             resetFormulario();
         });
