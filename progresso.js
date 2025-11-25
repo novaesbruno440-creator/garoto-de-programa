@@ -1,115 +1,128 @@
 // progresso.js
 
+// Importa funções do main.js: loadFromStorage, loadUserProfile
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.appState || !window.saveData || typeof Chart === 'undefined') {
-        console.error("Progresso.js: Dependências (appState ou Chart.js) não carregadas.");
-        return;
-    }
     
-    // ===============================================
-    // 1. Funções de Agregação de Dados
-    // ===============================================
+    const userProfile = loadUserProfile();
+    const allMeals = loadFromStorage(MEALS_KEY) || [];
+    const dailyGoal = userProfile.metas?.meta;
 
     /**
-     * Retorna um array com os últimos 7 dias (incluindo hoje) no formato YYYY-MM-DD.
-     * @returns {Array<string>} Array de datas.
+     * 1. Funções de Cálculo de Dados
      */
-    function getLast7Days() {
+    
+    // Gera as datas dos últimos 7 dias (incluindo hoje)
+    function getLastSevenDays() {
         const dates = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            dates.push(d.toISOString().split('T')[0]);
+            dates.push(d);
         }
         return dates;
     }
 
-    /**
-     * Agrega as calorias consumidas por dia para os últimos 7 dias.
-     * @param {Array<string>} last7Days Array de datas no formato YYYY-MM-DD.
-     * @returns {{dates: Array<string>, consumo: Array<number>, meta: Array<number>}}
-     */
-    function getWeeklyData(last7Days) {
-        const allRefeicoes = window.appState.refeicoes;
-        const metaDiaria = window.appState.perfil ? (window.appState.perfil.metaDiaria || 2000) : 2000;
+    // Agrega as calorias consumidas para cada dia dos últimos 7 dias
+    function getWeeklyConsumption(dates) {
+        const consumptionMap = {};
         
-        // Mapeia o consumo para cada data
-        const consumptionMap = allRefeicoes.reduce((acc, refeicao) => {
-            acc[refeicao.data] = (acc[refeicao.data] || 0) + Number(refeicao.calorias);
-            return acc;
-        }, {});
-        
-        const consumo = [];
-        const meta = [];
-        const labels = []; // Labels formatadas (ex: "Qui, 09/Nov")
-
-        last7Days.forEach(dateStr => {
-            const date = new Date(dateStr + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso
-            const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
-            const dayMonth = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-            
-            labels.push(`${dayName}, ${dayMonth}`);
-            consumo.push(consumptionMap[dateStr] || 0);
-            meta.push(metaDiaria);
+        // Inicializa o mapa com 0 para todos os dias
+        dates.forEach(date => {
+            consumptionMap[date.toDateString()] = 0;
         });
 
-        return { labels, consumo, meta };
+        // Agrega as calorias das refeições
+        allMeals.forEach(meal => {
+            const mealDate = new Date(meal.date).toDateString();
+            if (consumptionMap.hasOwnProperty(mealDate)) {
+                consumptionMap[mealDate] += meal.calorias;
+            }
+        });
+
+        // Retorna o array de consumo na ordem correta
+        return dates.map(date => consumptionMap[date.toDateString()]);
+    }
+    
+    // Formata o resumo de hoje para o topo da página
+    function updateTodaySummary() {
+        const today = new Date().toDateString();
+        const mealsToday = allMeals.filter(meal => new Date(meal.date).toDateString() === today);
+        const consumedToday = mealsToday.reduce((sum, meal) => sum + meal.calorias, 0);
+
+        const consumedEl = document.getElementById('consumido-hoje-prog');
+        const metaEl = document.getElementById('meta-hoje-prog');
+        const summaryCard = document.querySelector('.summary-registro-card');
+        
+        consumedEl.textContent = consumedToday;
+        
+        if (dailyGoal) {
+            metaEl.textContent = dailyGoal;
+            
+            // Adiciona classe de alerta se excedeu
+            if (consumedToday > dailyGoal) {
+                summaryCard.style.border = '1px solid var(--color-alert)';
+            } else {
+                summaryCard.style.border = '1px solid var(--border-color)';
+            }
+        } else {
+            metaEl.textContent = '--';
+        }
     }
 
-    // ===============================================
-    // 2. Renderização do Gráfico (Chart.js)
-    // ===============================================
 
     /**
-     * Cria e renderiza o gráfico de consumo semanal.
-     * @param {object} data Dados do gráfico (labels, consumo, meta).
+     * 2. Lógica do Gráfico (Chart.js)
      */
-    function renderizarGrafico(data) {
-        const ctx = document.getElementById('consumoChart').getContext('2d');
+    function renderChart() {
+        const ctx = document.getElementById('consumoChart')?.getContext('2d');
+        if (!ctx) return;
+
+        const sevenDays = getLastSevenDays();
+        const labels = sevenDays.map(d => d.toLocaleDateString('pt-BR', { weekday: 'short' }));
+        const data = getWeeklyConsumption(sevenDays);
         
-        // Destrói a instância anterior se existir (para evitar vazamento de memória e conflitos)
-        if (window.progressoChart) {
-            window.progressoChart.destroy();
+        // Define o dataset da meta diária
+        const goalData = dailyGoal ? Array(7).fill(dailyGoal) : [];
+        
+        const datasets = [{
+            label: 'Consumo (kcal)',
+            data: data,
+            backgroundColor: 'rgba(52, 211, 153, 0.6)', // Cor primária com transparência
+            borderColor: 'var(--primary-dark)',
+            borderWidth: 1,
+            borderRadius: 5,
+        }];
+        
+        if (dailyGoal) {
+             datasets.push({
+                label: 'Meta Diária',
+                data: goalData,
+                type: 'line', // Linha para a meta
+                borderColor: 'rgba(255, 99, 132, 1)', // Vermelho suave para meta
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderDash: [5, 5], // Linha pontilhada
+                borderWidth: 2,
+                pointRadius: 0, // Sem pontos na linha da meta
+             });
         }
 
-        window.progressoChart = new Chart(ctx, {
+
+        new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: data.labels,
-                datasets: [
-                    {
-                        label: 'Consumo (kcal)',
-                        data: data.consumo,
-                        backgroundColor: window.appState.ui.darkMode ? '#34d399' : '#4caf50', // Cor do primária (verde)
-                        borderColor: window.appState.ui.darkMode ? '#6ee7b7' : '#388e3c',
-                        borderWidth: 1,
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'line', // Linha para a meta
-                        label: 'Meta Diária',
-                        data: data.meta,
-                        borderColor: '#ef4444', // Cor de alerta/contraste
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        fill: false,
-                        yAxisID: 'y'
-                    }
-                ]
+                labels: labels,
+                datasets: datasets
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: {
-                            color: window.appState.ui.darkMode ? '#f3f4f6' : '#333'
-                        }
                     },
                     title: {
-                        display: false
+                        display: false,
+                        text: 'Consumo Calórico Semanal'
                     }
                 },
                 scales: {
@@ -117,77 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Calorias (kcal)',
-                            color: window.appState.ui.darkMode ? '#f3f4f6' : '#333'
-                        },
-                        ticks: {
-                            color: window.appState.ui.darkMode ? '#f3f4f6' : '#333'
-                        },
-                        grid: {
-                             color: window.appState.ui.darkMode ? 'rgba(243, 244, 246, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: window.appState.ui.darkMode ? '#f3f4f6' : '#333'
-                        },
-                        grid: {
-                             color: window.appState.ui.darkMode ? 'rgba(243, 244, 246, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            text: 'Calorias (kcal)'
                         }
                     }
                 }
             }
         });
     }
-    
-    // ===============================================
-    // 3. Renderização de Metas
-    // ===============================================
 
     /**
-     * Atualiza os cards de meta vs consumo de hoje.
+     * 3. Inicialização
      */
-    function atualizarMetasHoje() {
-        const hoje = window.getTodayDateString();
-        const perfil = window.appState.perfil;
-        const metaDiaria = perfil ? (perfil.metaDiaria || 0) : 0;
-        
-        const refeicoesHoje = window.appState.refeicoes.filter(r => r.data === hoje);
-        const totalConsumido = refeicoesHoje.reduce((acc, curr) => acc + Number(curr.calorias), 0);
-        
-        // Atualiza o DOM
-        const metaHojeProgEl = document.getElementById('meta-hoje-prog');
-        const consumidoHojeProgEl = document.getElementById('consumido-hoje-prog');
-        
-        if (metaHojeProgEl) metaHojeProgEl.textContent = metaDiaria || '--';
-        if (consumidoHojeProgEl) consumidoHojeProgEl.textContent = totalConsumido;
-        
-        // Aplica estilo de alerta se exceder
-        if (totalConsumido > metaDiaria && metaDiaria > 0) {
-            consumidoHojeProgEl.style.color = 'var(--color-alert)';
-        } else {
-            consumidoHojeProgEl.style.color = 'var(--primary-color)';
-        }
-    }
-
-
-    // ===============================================
-    // 4. Inicialização
-    // ===============================================
-
-    const last7Days = getLast7Days();
-    const weeklyData = getWeeklyData(last7Days);
-    
-    renderizarGrafico(weeklyData);
-    atualizarMetasHoje();
-    
-    // Adiciona um listener para quando o Modo Escuro for alterado, o gráfico ser renderizado novamente com cores atualizadas
-    const darkModeBtn = document.getElementById('toggle-dark-mode');
-    if (darkModeBtn) {
-        darkModeBtn.addEventListener('click', () => {
-             // Pequeno timeout para garantir que o body.dark-mode já foi aplicado
-            setTimeout(() => renderizarGrafico(weeklyData), 50); 
-        });
-    }
-
+    updateTodaySummary();
+    renderChart();
 });
