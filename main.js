@@ -1,241 +1,219 @@
 // main.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    // ===============================================
-    // 1. Variáveis Globais e Funções Utilitárias
-    // ===============================================
+const USER_KEY = 'personalfit_user_data';
+const MEALS_KEY = 'personalfit_meals';
+const DARK_MODE_KEY = 'personalfit_dark_mode';
+const FONT_SIZE_KEY = 'personalfit_font_size';
 
-    /**
-     * @returns {string} A data de hoje no formato YYYY-MM-DD.
-     */
-    function getTodayDateString() {
-        return new Date().toISOString().split('T')[0];
+/**
+ * Funções de Armazenamento
+ */
+
+// Salva um objeto no LocalStorage
+function saveToStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+// Carrega um objeto do LocalStorage
+function loadFromStorage(key) {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+}
+
+// Carrega o Perfil do Usuário
+function loadUserProfile() {
+    return loadFromStorage(USER_KEY) || {};
+}
+
+// Salva o Perfil do Usuário
+function saveUserProfile(profile) {
+    saveToStorage(USER_KEY, profile);
+}
+
+
+/**
+ * 1. Controle de Modo Escuro (Dark Mode)
+ */
+function applyDarkMode(isDark) {
+    document.body.classList.toggle('dark-mode', isDark);
+    saveToStorage(DARK_MODE_KEY, isDark);
+}
+
+function initDarkMode() {
+    const isDark = loadFromStorage(DARK_MODE_KEY);
+    // Aplica o tema salvo ou o tema do sistema como padrão
+    applyDarkMode(isDark === null ? window.matchMedia('(prefers-color-scheme: dark)').matches : isDark);
+
+    const toggleBtn = document.getElementById('toggle-dark-mode');
+    if (toggleBtn) {
+        toggleBtn.textContent = isDark ? '🌕' : '💡';
+        toggleBtn.addEventListener('click', () => {
+            const newIsDark = !document.body.classList.contains('dark-mode');
+            applyDarkMode(newIsDark);
+            toggleBtn.textContent = newIsDark ? '🌕' : '💡';
+        });
     }
+}
 
-    /**
-     * Carrega dados do LocalStorage, ou retorna um objeto padrão se não existirem.
-     * @param {string} key A chave para o LocalStorage.
-     * @param {object} defaultData Dados a serem retornados se a chave não for encontrada.
-     * @returns {object} Os dados carregados.
-     */
-    function loadData(key, defaultData) {
-        const data = localStorage.getItem(key);
-        try {
-            return data ? JSON.parse(data) : defaultData;
-        } catch (e) {
-            console.error(`Erro ao carregar/parsear ${key}:`, e);
-            return defaultData;
-        }
+
+/**
+ * 2. Controle de Tamanho da Fonte
+ */
+function applyFontSize(size) {
+    document.body.classList.remove('font-small', 'font-large');
+    if (size === 'small') {
+        document.body.classList.add('font-small');
+    } else if (size === 'large') {
+        document.body.classList.add('font-large');
     }
+    saveToStorage(FONT_SIZE_KEY, size);
+}
 
-    /**
-     * Salva dados no LocalStorage.
-     * @param {string} key A chave para o LocalStorage.
-     * @param {object} data Os dados a serem salvos.
-     */
-    function saveData(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
+function initFontSizeControls() {
+    const savedSize = loadFromStorage(FONT_SIZE_KEY) || 'medium';
+    applyFontSize(savedSize);
 
-    /**
-     * Função Centralizada para Chamar a API Gemini
-     * @param {string} prompt Texto do prompt.
-     * @returns {Promise<string>} O texto da resposta do modelo.
-     */
-    async function fetchGeminiResponse(prompt) {
-        const apiKey = ""; // Chave injetada pelo ambiente
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const decreaseBtn = document.getElementById('font-size-decrease');
+    const increaseBtn = document.getElementById('font-size-increase');
 
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }]
-        };
-
-        const maxRetries = 3;
-        let attempt = 0;
-
-        while (attempt < maxRetries) {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.status}`);
-                }
-
-                const data = await response.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Não consegui gerar uma resposta.";
-            } catch (error) {
-                attempt++;
-                console.warn(`Tentativa ${attempt} falhou.`, error);
-                if (attempt >= maxRetries) {
-                    throw error;
-                }
-                // Backoff exponencial simples
-                await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+    if (decreaseBtn && increaseBtn) {
+        decreaseBtn.addEventListener('click', () => {
+            const currentSize = loadFromStorage(FONT_SIZE_KEY) || 'medium';
+            if (currentSize === 'large') {
+                applyFontSize('medium');
+            } else if (currentSize === 'medium') {
+                applyFontSize('small');
             }
-        }
+        });
+
+        increaseBtn.addEventListener('click', () => {
+            const currentSize = loadFromStorage(FONT_SIZE_KEY) || 'medium';
+            if (currentSize === 'small') {
+                applyFontSize('medium');
+            } else if (currentSize === 'medium') {
+                applyFontSize('large');
+            }
+        });
     }
-    
-    // Expor função Gemini globalmente
-    window.fetchGeminiResponse = fetchGeminiResponse;
+}
 
-    // Inicialização do estado do App
-    window.appState = {
-        auth: loadData('PERSONALfit_auth', { isAuthenticated: false, user: null }), // Estado de Autenticação
-        perfil: loadData('PERSONALfit_perfil', null),
-        refeicoes: loadData('PERSONALfit_refeicoes', []), // {data: 'YYYY-MM-DD', descricao: '...', calorias: 500, tipo: 'almoco', id: 'uuid'}
-        ui: loadData('PERSONALfit_ui', {
-            darkMode: false,
-            fontSize: 'normal' // 'normal', 'large', 'small'
-        }),
-    };
-    
-    // Define as funções globais para que outros scripts as utilizem
-    window.getTodayDateString = getTodayDateString;
-    window.saveData = saveData;
-    window.loadData = loadData;
 
-    // ===============================================
-    // 2. Sistema de Autenticação e Cabeçalho
-    // ===============================================
+/**
+ * 3. Controle de Navegação e Estado de Auth
+ */
 
-    function updateAuthUI() {
-        const authContainer = document.getElementById('auth-container');
-        if (!authContainer) return; // Se não estiver em uma página com header (ex: login)
+// Verifica se o usuário está logado
+function isAuthenticated() {
+    const user = loadUserProfile();
+    // Simplesmente verifica se o email e senha estão salvos (simulando autenticação)
+    return !!user.email && !!user.password;
+}
 
-        const { isAuthenticated, user } = window.appState.auth;
-
-        if (isAuthenticated && user) {
-            // Usuário Logado
-            authContainer.innerHTML = `
-                <div class="auth-widget">
-                    <div class="auth-user-info">
-                        <span class="auth-name">Olá, ${user.name}</span>
-                        <span class="auth-status">Online</span>
-                    </div>
-                    <button id="btn-logout" class="auth-btn-logout" title="Sair">
-                        ➔
-                    </button>
-                </div>
-            `;
-            
-            // Event listener para Logout
-            document.getElementById('btn-logout').addEventListener('click', logoutUser);
-        } else {
-            // Usuário Não Logado
-            authContainer.innerHTML = `
-                <div class="auth-widget">
-                    <span class="auth-status" style="color: var(--text-secondary);">Visitante</span>
-                    <a href="login.html" class="auth-btn-login">Entrar →</a>
-                </div>
-            `;
-        }
+// Redireciona para o login se não estiver autenticado (páginas internas)
+function checkAuthentication(redirectUrl = 'login.html') {
+    if (window.location.pathname.includes('login.html')) {
+        // Se já está na página de login, não faz nada
+        return;
     }
+    if (!isAuthenticated()) {
+        window.location.href = redirectUrl;
+    }
+}
 
-    function logoutUser() {
-        if(confirm("Deseja realmente sair?")) {
-            window.appState.auth = { isAuthenticated: false, user: null };
-            saveData('PERSONALfit_auth', window.appState.auth);
+// Cria o widget de autenticação no Header
+function renderAuthWidget() {
+    const authContainer = document.getElementById('auth-container');
+    if (!authContainer) return;
+
+    const user = loadUserProfile();
+    const isLoggedIn = isAuthenticated();
+
+    authContainer.innerHTML = ''; // Limpa o conteúdo
+
+    if (isLoggedIn) {
+        // Usuário Logado
+        authContainer.innerHTML = `
+            <div class="auth-widget">
+                <div class="auth-user-info">
+                    <span class="auth-name">${user.email.split('@')[0]}</span>
+                    <span class="auth-status">Online</span>
+                </div>
+                <button class="auth-btn-logout" id="logout-btn" title="Sair da Conta">🚪</button>
+            </div>
+        `;
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            // Limpa apenas os dados de autenticação simulados
+            saveUserProfile({ ...user, email: '', password: '' });
             window.location.href = 'login.html';
-        }
+        });
+
+    } else if (!window.location.pathname.includes('login.html')) {
+        // Usuário Deslogado (apenas em páginas internas)
+        authContainer.innerHTML = `
+            <a href="login.html" class="auth-btn-login">Fazer Login</a>
+        `;
     }
+}
 
-    // Inicializa a UI de autenticação
-    updateAuthUI();
-
-    // ===============================================
-    // 3. Funcionalidades de UI (Modo Escuro, Fonte)
-    // ===============================================
-
-    /**
-     * Aplica o estado de UI salvo ao corpo (body) do documento.
-     */
-    function applyUIState() {
-        const { darkMode, fontSize } = window.appState.ui;
-
-        // Modo Escuro
-        document.body.classList.toggle('dark-mode', darkMode);
-        
-        // Tamanho da Fonte
-        document.body.classList.remove('font-large', 'font-small');
-        if (fontSize === 'large') {
-            document.body.classList.add('font-large');
-        } else if (fontSize === 'small') {
-            document.body.classList.add('font-small');
+// Adiciona a classe 'active' ao link da página atual na sidebar
+function setActiveNavLink() {
+    const path = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('.sidebar nav a');
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === path) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
         }
+    });
+}
 
-        // Sidebar - Marca o item ativo
-        const path = window.location.pathname.split('/').pop();
-        document.querySelectorAll('.sidebar nav a').forEach(a => {
-            a.classList.remove('active');
-            if (a.getAttribute('href') === path) {
-                a.classList.add('active');
-            } else if (path === 'index.html' && a.getAttribute('href') === 'index.html') {
-                 a.classList.add('active');
+
+/**
+ * 4. Limpar Dados (Novo Usuário)
+ */
+function initClearDataControl() {
+    const clearBtn = document.getElementById('novo-usuario-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar TODOS os dados (Perfil e Refeições) e iniciar um Novo Usuário?')) {
+                localStorage.removeItem(USER_KEY);
+                localStorage.removeItem(MEALS_KEY);
+                alert('Dados limpos com sucesso. Redirecionando para o login.');
+                window.location.href = 'login.html';
             }
         });
-        
-        // Exibir a data de hoje no Dashboard
-        const todayDateEl = document.getElementById('today-date');
-        if (todayDateEl) {
-            todayDateEl.textContent = `Hoje: ${new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-        }
     }
+}
 
-    // Inicializa a UI
-    applyUIState();
 
-    // Event Listeners para Controles Visuais
+/**
+ * 5. Data de Hoje
+ */
+function displayTodayDate() {
+    const dateElement = document.getElementById('today-date');
+    if (dateElement) {
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateElement.textContent = today.toLocaleDateString('pt-BR', options);
+    }
+}
+
+
+/**
+ * Inicialização
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Verifica autenticação antes de tudo
+    checkAuthentication();
+
+    // 2. Inicializa funcionalidades de UI
+    initDarkMode();
+    initFontSizeControls();
+    initClearDataControl();
+    displayTodayDate();
+    setActiveNavLink();
     
-    // Toggle Dark Mode
-    const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
-    if (toggleDarkModeBtn) {
-        toggleDarkModeBtn.addEventListener('click', () => {
-            window.appState.ui.darkMode = !window.appState.ui.darkMode;
-            saveData('PERSONALfit_ui', window.appState.ui);
-            applyUIState();
-        });
-    }
-
-    // Font Size Increase
-    const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
-    if (fontSizeIncreaseBtn) {
-        fontSizeIncreaseBtn.addEventListener('click', () => {
-            window.appState.ui.fontSize = window.appState.ui.fontSize === 'normal' ? 'large' : 'large';
-            saveData('PERSONALfit_ui', window.appState.ui);
-            applyUIState();
-        });
-    }
-
-    // Font Size Decrease
-    const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
-    if (fontSizeDecreaseBtn) {
-        fontSizeDecreaseBtn.addEventListener('click', () => {
-            window.appState.ui.fontSize = window.appState.ui.fontSize === 'normal' ? 'small' : 'small';
-            saveData('PERSONALfit_ui', window.appState.ui);
-            applyUIState();
-        });
-    }
-
-    // ===============================================
-    // 4. Funcionalidade de Limpar Dados
-    // ===============================================
-
-    const novoUsuarioBtn = document.getElementById('novo-usuario-btn');
-    if (novoUsuarioBtn) {
-        novoUsuarioBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar TODOS os seus dados (Perfil, Refeições, Progresso)? Esta ação é irreversível.')) {
-                localStorage.removeItem('PERSONALfit_perfil');
-                localStorage.removeItem('PERSONALfit_refeicoes');
-                // Mantemos o auth e UI
-                
-                alert('Dados limpos com sucesso! Redirecionando para a página inicial.');
-                window.location.href = 'index.html'; // Redireciona para recarregar o app e limpar estados
-            }
-        });
-    }
-
+    // 3. Renderiza o widget de autenticação (sempre por último)
+    renderAuthWidget();
 });
