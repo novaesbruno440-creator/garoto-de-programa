@@ -1,191 +1,220 @@
 // registro.js
 
+// Importa funções do main.js: saveToStorage, loadFromStorage, loadUserProfile
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.appState || !window.saveData) return;
-
     const registroForm = document.getElementById('registro-form');
-    const listaRefeicoesEl = document.getElementById('lista-refeicoes');
-    const totalConsumidoEl = document.getElementById('total-consumido-registro');
-    const metaHojeEl = document.getElementById('meta-hoje-registro');
-    const cancelarEdicaoBtn = document.getElementById('cancelar-edicao');
-    const hoje = window.getTodayDateString();
-
+    const listaRefeicoes = document.getElementById('lista-refeicoes');
+    const today = new Date().toDateString();
+    
     let isEditing = false;
     let editingId = null;
 
-    // ===============================================
-    // 1. Funções de Manipulação de Dados
-    // ===============================================
-
     /**
-     * Renderiza o item da lista de refeições.
-     * @param {object} refeicao O objeto refeição.
-     * @returns {string} O HTML do item da lista.
+     * Funções de Dados de Refeições
      */
-    function createMealItemHTML(refeicao) {
-        const tipoLabel = {
-            'cafe': 'Café da Manhã',
-            'almoco': 'Almoço',
-            'janta': 'Jantar',
-            'lanche': 'Lanche/Outro',
-        }[refeicao.tipo] || 'Refeição';
-        
-        // Garante que o ID exista para edição/remoção
-        const id = refeicao.id || new Date().getTime().toString(); 
-        refeicao.id = id; 
-
-        return `
-            <li class="meal-item" data-id="${id}">
-                <div class="meal-details">
-                    <span class="meal-type">${tipoLabel}</span>
-                    <span class="meal-description">${refeicao.descricao}</span>
-                    <span class="meal-calorias">${refeicao.calorias} kcal</span>
-                </div>
-                <div class="meal-actions">
-                    <button class="edit-btn" data-id="${id}" title="Editar Refeição">✏️</button>
-                    <button class="delete-btn" data-id="${id}" title="Remover Refeição">🗑️</button>
-                </div>
-            </li>
-        `;
-    }
-
-    /**
-     * Renderiza toda a lista de refeições de hoje.
-     */
-    function renderizarListaRefeicoes() {
-        const refeicoesHoje = window.appState.refeicoes.filter(r => r.data === hoje);
-        listaRefeicoesEl.innerHTML = ''; // Limpa a lista
-        
-        if (refeicoesHoje.length === 0) {
-            listaRefeicoesEl.innerHTML = '<p class="empty-state">Nenhuma refeição registrada para hoje.</p>';
-        } else {
-            refeicoesHoje.forEach(refeicao => {
-                listaRefeicoesEl.innerHTML += createMealItemHTML(refeicao);
-            });
-        }
-        
-        atualizarTotalConsumido(refeicoesHoje);
-        
-        // Adiciona event listeners para os botões de ação após a renderização
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', () => editarRefeicao(btn.dataset.id));
-        });
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => removerRefeicao(btn.dataset.id));
-        });
-    }
-
-    /**
-     * Atualiza o display do total de calorias consumidas hoje.
-     * @param {Array<object>} refeicoesHoje O array de refeições de hoje.
-     */
-    function atualizarTotalConsumido(refeicoesHoje) {
-        const total = refeicoesHoje.reduce((acc, curr) => acc + Number(curr.calorias), 0);
-        totalConsumidoEl.textContent = total;
-        
-        // Atualiza a Meta de Hoje
-        const meta = window.appState.perfil ? (window.appState.perfil.metaDiaria || 'Defina no Perfil') : 'Defina no Perfil';
-        metaHojeEl.textContent = meta === 'Defina no Perfil' ? meta : `${meta} kcal`;
-        
-        // Estiliza o total se a meta for excedida (opcional, requer CSS adicional)
-        if (typeof meta === 'number' && total > meta) {
-             totalConsumidoEl.parentElement.classList.add('over-limit');
-        } else {
-             totalConsumidoEl.parentElement.classList.remove('over-limit');
-        }
-    }
-
-    /**
-     * Remove uma refeição pelo ID.
-     * @param {string} id O ID da refeição a ser removida.
-     */
-    function removerRefeicao(id) {
-        if (confirm('Tem certeza que deseja remover esta refeição?')) {
-            window.appState.refeicoes = window.appState.refeicoes.filter(r => r.id !== id);
-            window.saveData('nutriportal_refeicoes', window.appState.refeicoes);
-            renderizarListaRefeicoes(); // Atualiza a lista
-        }
-    }
-
-    /**
-     * Prepara o formulário para editar uma refeição.
-     * @param {string} id O ID da refeição a ser editada.
-     */
-    function editarRefeicao(id) {
-        const refeicao = window.appState.refeicoes.find(r => r.id === id);
-        if (!refeicao) return;
-
-        // Preenche o formulário
-        document.getElementById('descricao').value = refeicao.descricao;
-        document.getElementById('calorias').value = refeicao.calorias;
-        document.getElementById('tipo').value = refeicao.tipo;
-
-        // Muda para o modo de edição
-        isEditing = true;
-        editingId = id;
-        registroForm.querySelector('button[type="submit"]').textContent = 'Salvar Edição';
-        cancelarEdicaoBtn.classList.remove('hidden');
-
-        // Rola a tela para o formulário
-        registroForm.scrollIntoView({ behavior: 'smooth' });
+    
+    // Carrega todas as refeições
+    function loadMeals() {
+        return loadFromStorage(MEALS_KEY) || [];
     }
     
-    /**
-     * Limpa o formulário e retorna ao modo de registro.
-     */
-    function resetFormulario() {
-        registroForm.reset();
-        isEditing = false;
-        editingId = null;
-        registroForm.querySelector('button[type="submit"]').textContent = 'Registrar';
-        cancelarEdicaoBtn.classList.add('hidden');
+    // Salva todas as refeições
+    function saveMeals(meals) {
+        saveToStorage(MEALS_KEY, meals);
+    }
+    
+    // Filtra as refeições do dia atual
+    function getTodayMeals() {
+        return loadMeals().filter(meal => new Date(meal.date).toDateString() === today);
     }
 
-    // ===============================================
-    // 2. Event Listeners
-    // ===============================================
+    /**
+     * Funções de UI
+     */
     
-    // Submissão do Formulário
-    if (registroForm) {
-        registroForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+    // Renderiza a lista de refeições
+    function renderMealList() {
+        const todayMeals = getTodayMeals();
+        listaRefeicoes.innerHTML = ''; // Limpa a lista
+        
+        if (todayMeals.length === 0) {
+            listaRefeicoes.innerHTML = `
+                <div class="empty-state">
+                    <p>Você ainda não registrou nada hoje.</p>
+                    <p style="margin-top: 5px;">Use o formulário para começar!</p>
+                </div>
+            `;
+            updateDailySummary(0); // Atualiza o resumo para zero
+            return;
+        }
 
-            const novaRefeicao = {
-                descricao: document.getElementById('descricao').value,
-                calorias: Number(document.getElementById('calorias').value),
-                tipo: document.getElementById('tipo').value,
-                data: hoje,
+        let totalCalorias = 0;
+
+        todayMeals.forEach(meal => {
+            totalCalorias += meal.calorias;
+            
+            const mealTypeMap = {
+                'cafe': 'Café da Manhã',
+                'almoco': 'Almoço',
+                'janta': 'Jantar',
+                'lanche': 'Lanche'
             };
 
-            if (isEditing) {
-                // Modo Edição: Atualiza o item existente
-                const index = window.appState.refeicoes.findIndex(r => r.id === editingId);
-                if (index !== -1) {
-                    // Mantém o ID original
-                    window.appState.refeicoes[index] = { ...novaRefeicao, id: editingId }; 
-                }
-                alert('Refeição atualizada!');
-            } else {
-                // Modo Registro: Adiciona novo item
-                novaRefeicao.id = new Date().getTime().toString(); // ID único
-                window.appState.refeicoes.push(novaRefeicao);
-                alert('Refeição registrada!');
-            }
+            const listItem = document.createElement('li');
+            listItem.className = 'meal-item';
+            listItem.dataset.id = meal.id;
+            
+            listItem.innerHTML = `
+                <div class="meal-details">
+                    <span class="meal-type">${mealTypeMap[meal.tipo]}</span>
+                    <span class="meal-description">${meal.descricao}</span>
+                    <span class="meal-calorias">${meal.calorias} kcal</span>
+                </div>
+                <div class="meal-actions">
+                    <button class="edit-btn" data-id="${meal.id}" title="Editar">✏️</button>
+                    <button class="delete-btn" data-id="${meal.id}" title="Excluir">🗑️</button>
+                </div>
+            `;
+            listaRefeicoes.appendChild(listItem);
+        });
+        
+        // Atualiza o resumo calórico e metas após renderizar
+        updateDailySummary(totalCalorias);
 
-            window.saveData('PERSONALfit_refeicoes', window.appState.refeicoes);
-            renderizarListaRefeicoes();
-            resetFormulario();
+        // Adiciona listeners para edição e exclusão
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', handleEdit);
+        });
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', handleDelete);
         });
     }
-    
-    // Botão Cancelar Edição
-    if (cancelarEdicaoBtn) {
-        cancelarEdicaoBtn.addEventListener('click', resetFormulario);
+
+    // Atualiza os cards de resumo diário
+    function updateDailySummary(consumed) {
+        const userProfile = loadUserProfile();
+        const goal = userProfile.metas?.meta || null;
+        
+        document.getElementById('consumo-diario-registro').textContent = consumed;
+        document.getElementById('meta-diaria').textContent = goal ? `${goal} kcal` : '--';
+        
+        const remainingEl = document.getElementById('calorias-restantes');
+        
+        if (goal) {
+            const remaining = goal - consumed;
+            remainingEl.textContent = `${remaining} kcal`;
+            remainingEl.style.color = remaining >= 0 ? 'var(--primary-dark)' : 'var(--color-alert)';
+        } else {
+            remainingEl.textContent = '--';
+            remainingEl.style.color = 'var(--text-secondary)';
+        }
     }
 
-    // ===============================================
-    // 3. Inicialização
-    // ===============================================
 
-    renderizarListaRefeicoes();
+    /**
+     * Handlers de Ação
+     */
+
+    // Handler de Submissão do Formulário
+    registroForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const descricao = document.getElementById('descricao').value.trim();
+        const calorias = Number(document.getElementById('calorias').value);
+        const tipo = document.getElementById('tipo').value;
+
+        const newMeal = {
+            id: isEditing ? editingId : Date.now(), // Usa o ID existente na edição
+            descricao,
+            calorias,
+            tipo,
+            date: new Date().toISOString()
+        };
+
+        let allMeals = loadMeals();
+
+        if (isEditing) {
+            // Edição: encontra e substitui o item
+            const index = allMeals.findIndex(meal => meal.id === editingId);
+            if (index !== -1) {
+                allMeals[index] = newMeal;
+            }
+            alert('Refeição editada com sucesso!');
+        } else {
+            // Novo Registro: adiciona o item
+            allMeals.push(newMeal);
+            alert('Refeição registrada com sucesso!');
+        }
+        
+        saveMeals(allMeals);
+        registroForm.reset();
+        
+        // Finaliza o modo de edição
+        resetFormMode(); 
+        
+        renderMealList();
+    });
+    
+    // Handler de Edição
+    function handleEdit(e) {
+        const id = Number(e.currentTarget.dataset.id);
+        const mealToEdit = loadMeals().find(meal => meal.id === id);
+        
+        if (mealToEdit) {
+            // 1. Pré-preenche o formulário
+            document.getElementById('descricao').value = mealToEdit.descricao;
+            document.getElementById('calorias').value = mealToEdit.calorias;
+            document.getElementById('tipo').value = mealToEdit.tipo;
+            
+            // 2. Entra no modo de edição
+            isEditing = true;
+            editingId = id;
+            document.querySelector('.btn[type="submit"]').textContent = '✔️ Salvar Alterações';
+            document.getElementById('cancelar-edicao').classList.remove('hidden');
+            
+            // Rola para o topo do formulário no mobile
+            document.getElementById('descricao').focus(); 
+        }
+    }
+    
+    // Handler de Exclusão
+    function handleDelete(e) {
+        const id = Number(e.currentTarget.dataset.id);
+
+        if (confirm('Tem certeza que deseja excluir esta refeição?')) {
+            let allMeals = loadMeals();
+            // Filtra, mantendo apenas as refeições que NÃO têm o ID excluído
+            const updatedMeals = allMeals.filter(meal => meal.id !== id);
+            
+            saveMeals(updatedMeals);
+            
+            // Se estiver editando o item que foi excluído, reseta o formulário
+            if (editingId === id) {
+                resetFormMode();
+            }
+            
+            alert('Refeição excluída com sucesso.');
+            renderMealList();
+        }
+    }
+    
+    // Reseta o estado do formulário para "novo registro"
+    function resetFormMode() {
+        isEditing = false;
+        editingId = null;
+        document.querySelector('.btn[type="submit"]').textContent = '➕ Registrar';
+        document.getElementById('cancelar-edicao').classList.add('hidden');
+        registroForm.reset();
+    }
+    
+    // Listener para o botão "Cancelar Edição"
+    document.getElementById('cancelar-edicao')?.addEventListener('click', () => {
+        resetFormMode();
+    });
+
+    /**
+     * Inicialização
+     */
+    renderMealList();
 });
