@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tipo = document.getElementById('tipo').value;
 
         const newMeal = {
-            id: isEditing ? editingId : Date.now(), // Usa o ID existente na edição
+            id: isEditing ? editingId : Date.now(),
             descricao,
             calorias,
             tipo,
@@ -135,24 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let allMeals = loadMeals();
 
         if (isEditing) {
-            // Edição: encontra e substitui o item
             const index = allMeals.findIndex(meal => meal.id === editingId);
             if (index !== -1) {
                 allMeals[index] = newMeal;
             }
-            alert('Refeição editada com sucesso!');
         } else {
-            // Novo Registro: adiciona o item
             allMeals.push(newMeal);
-            alert('Refeição registrada com sucesso!');
         }
         
         saveMeals(allMeals);
         registroForm.reset();
         
-        // Finaliza o modo de edição
         resetFormMode(); 
-        
         renderMealList();
     });
     
@@ -182,21 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleDelete(e) {
         const id = Number(e.currentTarget.dataset.id);
 
-        if (confirm('Tem certeza que deseja excluir esta refeição?')) {
-            let allMeals = loadMeals();
-            // Filtra, mantendo apenas as refeições que NÃO têm o ID excluído
-            const updatedMeals = allMeals.filter(meal => meal.id !== id);
-            
-            saveMeals(updatedMeals);
-            
-            // Se estiver editando o item que foi excluído, reseta o formulário
-            if (editingId === id) {
-                resetFormMode();
-            }
-            
-            alert('Refeição excluída com sucesso.');
-            renderMealList();
+        let allMeals = loadMeals();
+        const updatedMeals = allMeals.filter(meal => meal.id !== id);
+        
+        saveMeals(updatedMeals);
+        
+        if (editingId === id) {
+            resetFormMode();
         }
+        
+        renderMealList();
     }
     
     // Reseta o estado do formulário para "novo registro"
@@ -218,3 +207,4 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     renderMealList();
 });
+
