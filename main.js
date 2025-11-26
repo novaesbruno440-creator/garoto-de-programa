@@ -179,8 +179,10 @@ function initClearDataControl() {
             if (confirm('Tem certeza que deseja limpar TODOS os dados (Perfil e Refeições) e iniciar um Novo Usuário?')) {
                 localStorage.removeItem(USER_KEY);
                 localStorage.removeItem(MEALS_KEY);
-                alert('Dados limpos com sucesso. Redirecionando para o login.');
-                window.location.href = 'login.html';
+                showToast('Dados limpos com sucesso. Redirecionando para o login.', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 3000);
             }
         });
     }
@@ -199,6 +201,31 @@ function displayTodayDate() {
     }
 }
 
+
+/**
+ * Toast Notification - Notificação Visual Customizada
+ */
+function showToast(message, type = 'success', duration = 3000) {
+    // Remove toast anterior se existir
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Anima entrada
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove após o tempo especificado
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 /**
  * Inicialização
