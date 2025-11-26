@@ -858,3 +858,54 @@ body.login-page {
         flex-direction: column;
     }
 }
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    background-color: #10b981;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 0.95em;
+    font-weight: 500;
+    max-width: 300px;
+    word-wrap: break-word;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-notification.toast-success {
+    background-color: #10b981;
+}
+
+.toast-notification.toast-error {
+    background-color: #ef4444;
+}
+
+.toast-notification.toast-warning {
+    background-color: #f59e0b;
+}
+
+.toast-notification.toast-info {
+    background-color: #3b82f6;
+}
+
+/* Responsivo */
+@media (max-width: 640px) {
+    .toast-notification {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
+    }
+}
