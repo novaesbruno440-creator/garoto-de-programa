@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PERSONALfit — Registro</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+   <nav>
+  <a href="index.html" ><img src="icon.webp" alt="icone perfil">.perfil</a>
+  <a href="registro.html"><img src="arquivo.webp" alt="icone pasta">.registros</a>
+  <a href="progresso.html"><img src="grafico.webp" alt="icone grafico">.Progresso</a>
+  <a href="referencias.html"><img src="selo.webp" alt="icone referencia">s</a> 
+    </nav>
+    
+    <div class="settings-controls">
+      <h4>Visual</h4>
+      <div class="control-group">
+        <label>Escuro</label>
+        <button id="toggle-dark-mode" class="icon-btn">💡</button>
+      </div>
+      <div class="control-group">
+        <label>Fonte</label>
+        <div>
+            <button id="font-size-decrease" class="icon-btn">-</button>
+            <button id="font-size-increase" class="icon-btn">+</button>
+        </div>
+      </div>
+      <div style="margin-top: 15px;">
+       <div class="settings-controls">
+        <h4>Dados</h4>
+        <div class="control-group">
+            <button id="novo-usuario-btn" class="btn secondary full-width">Limpar Dados</button>
+        </div>
+    </div>
+  </aside>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div>
+          <h1>Registro de Refeições</h1>
+          <p class="header-date" id="today-date"></p>
+      </div>
+      <div id="auth-container"></div>
+    </header>
+
+    <div class="grid-cards" style="margin-bottom: 24px;">
+        <div class="small-card">
+            <h4>Consumido</h4>
+            <p id="consumo-diario-registro">0</p>
+        </div>
+        <div class="small-card">
+            <h4>Meta</h4>
+            <p id="meta-diaria">--</p>
+        </div>
+        <div class="small-card">
+            <h4>Restante</h4>
+            <p id="calorias-restantes">--</p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+        
+        <section class="card">
+          <h3>Adicionar Alimento</h3>
+          
+          <form id="registro-form">
+            <label>Descrição do Alimento</label>
+            <input type="text" id="descricao" placeholder="Ex: Arroz com Feijão" required />
+
+            <div class="input-row">
+              <div>
+                <label>Calorias (kcal)</label>
+                <input type="number" id="calorias" min="1" placeholder="0" required />
+              </div>
+              <div>
+                <label>Refeição</label>
+                <select id="tipo" required>
+                  <option value="cafe">Café da Manhã</option>
+                  <option value="almoco">Almoço</option>
+                  <option value="janta">Jantar</option>
+                  <option value="lanche">Lanche</option>
+                </select>
+              </div>
+            </div>
+            
+            <a href="https://www.tabelatacoonline.com.br/" target="_blank" style="color: #2563eb; text-decoration: underline;">
+              <b>consulte calorias aqui</b>
+            </a>
+              
+            <div style="display:flex; gap:10px; margin-top:20px;">
+              <button type="submit" class="btn full-width">➕ Registrar</button>
+              <button type="button" id="cancelar-edicao" class="btn secondary hidden">Cancelar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h3>Refeições de Hoje</h3>
+          <ul id="lista-refeicoes" class="meal-list">
+              </ul>
+        </section>
+
+    </div>
+  </main>
+
+  <script src="main.js"></script>
+  <script src="registro.js"></script>
+  <script src="auth.js"></script>
+
+</body>
+
+</html>

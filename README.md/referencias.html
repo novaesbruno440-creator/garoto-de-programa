@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PERSONALfit — Referências</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+   <nav>
+  <a href="index.html" ><img src="icon.webp" alt="icone perfil">.perfil</a>
+  <a href="registro.html"><img src="arquivo.webp" alt="icone pasta">.registros</a>
+  <a href="progresso.html"><img src="grafico.webp" alt="icone grafico">.Progresso</a>
+  <a href="referencias.html"><img src="selo.webp" alt="icone referencia">s</a> 
+    </nav>
+    
+    <div class="settings-controls">
+      <h4>Visual</h4>
+      <div class="control-group">
+        <label>Modo Escuro:</label>
+        <button id="toggle-dark-mode" class="icon-btn">💡</button>
+      </div>
+      <div class="control-group">
+        <label>Tamanho da Fonte:</label>
+        <button id="font-size-decrease" class="icon-btn">-</button>
+        <button id="font-size-increase" class="icon-btn">+</button>
+      </div>
+    </div>
+    
+    <div class="settings-controls">
+        <h4>Dados</h4>
+        <div class="control-group">
+            <button id="novo-usuario-btn" class="btn secondary full-width">Limpar Dados</button>
+        </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <h1>Referências Oficiais</h1>
+      <div id="auth-container">
+        </div>
+    </header>
+
+    <p class="info-text" style="margin-bottom: 30px;">
+        Nesta seção, você encontra as fontes e as metodologias oficiais que sustentam os cálculos e as recomendações do nosso site
+    </p>
+
+    <section class="card">
+        <h2>Fórmulas de Cálculo e Metodologia</h2>
+        <p>A Taxa Metabólica Basal (TMB) e o Gasto Calórico Total (GCT) são calculados no seu Perfil com base em metodologias cientificamente aceitas:</p>
+        
+        <div class="grid-cards-2">
+            
+            <div class="small-card">
+                <h4>Fórmula de TMB (Usada no site)</h4>
+                <p>Nós utilizamos a "Fórmula de Harris-Benedict Revisada" para estimar sua Taxa Metabólica Basal.</p>
+                <a href="https://pt.wikipedia.org/wiki/Taxa_metab%C3%B3lica_basal" target="_blank" class="link-highlight">Leia sobre a Fórmula →</a>
+            </div>
+
+            <div class="small-card">
+                <h4>Fatores de Atividade</h4>
+                <p>O Gasto Calórico Total (Manutenção) é obtido multiplicando a TMB pelos "Fatores de Atividade".</p>
+                <a href="https://www.oceandrop.com.br/blog/metabolismo-basal?srsltid=AfmBOoqT7yajTFYBoWjjKyJ1p7njElABBCFsBPGtj5LVOEXvksKR8VBE" target="_blank" class="link-highlight">Referência →</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="card">
+        <h2>Tabelas de Composição de Alimentos</h2>
+       <b> <p>Para o registro de calorias, a precisão depende de fontes de dados nutricionais de alta qualidade. Recomendamos as seguintes tabelas oficiais:</p> </b> 
+        
+        <ul class="link-list">
+            <li>
+                <a href="https://www.tbca.net.br/" target="_blank">
+                    TBCA (Tabela Brasileira de Composição de Alimentos)
+                   <span class="info-text">|<b>A mais completa e oficial fonte de dados nutricionais no Brasil (USP/Ministério da Saúde).</b> </span> 
+                </a>
+            </li>
+            <li>
+                <a href="https://fdc.nal.usda.gov/" target="_blank">
+                    FoodData Central (USDA)
+                  <b>  <span class="info-text">| Fonte oficial do Departamento de Agricultura dos Estados Unidos, mundialmente utilizada.</span></b> 
+                </a>
+            </li>
+             <li>
+                <a href="https://www.tabelatacoonline.com.br/" target="_blank">
+                    Tabela TACO
+                  <b>  <span class="info-text">|a Tabela Brasileira de Composição de Alimentos um projeto que fornece informações detalhadas sobre os nutrientes de alimentos consumidos no Brasil.</span></b> 
+                </a>
+
+             </li>
+
+        </ul>
+    </section>
+    
+    <section class="card">
+        <h2>Saúde e Nutrição Geral</h2>
+       <b> <p>Aconselhamos consultar fontes governamentais e de saúde reconhecidas internacionalmente para qualquer informação médica ou nutricional!</p></b>
+         
+            <strong>⚠️ Lembrete:</strong> Nosso site é uma ferramenta de acompanhamento e não substitui a consulta a um profissional de saúde, como nutricionista ou médico.
+        </p>
+    </section>
+
+    <section class="card">
+        <p><b><h3>Site criado e desenvolvido unicamente por alunos de sistema da informaçâo UNEX</h3></b></p>
+        <p><b>Bruno Novaes Silva</b></p>
+        <p><b>Caique Almeida</b></p>
+        <p><b>Jucelino Junior de Jesus</b></p>
+        <p><b>Julio Costa Bastos</b></p>
+        <p><b>Leonardo Nunes de Oliveira</b></p>
+        
+        
+       
+    </section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
