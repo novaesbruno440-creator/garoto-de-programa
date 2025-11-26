@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Mostra o card de IA após o cálculo da meta
             document.getElementById('ai-meal-plan-card').classList.remove('hidden');
 
-            alert('Perfil e Metas salvos com sucesso!');
+            showToast('✅ Perfil e Metas salvos com sucesso!', 'success', 3000);
         });
     }
 
