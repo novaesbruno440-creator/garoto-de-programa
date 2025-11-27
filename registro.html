@@ -5,39 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PERSONALfit — Registro</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2964/2964514.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <aside class="sidebar">
-    <h2 class="logo">PERSONALfit</h2>
+    <h2 class="logo"><i class="fa-solid fa-dumbbell"></i> PERSONALfit</h2>
     <nav>
-  <a href="index.html">😮‍💨.Perfil</a>
-  <a href="registro.html">🗃️.Registro</a>
-  <a href="progresso.html">📈.Progresso</a>
-  <a href="referencias.html">🔗.Referências</a> 
+      <a href="index.html"><i class="fa-solid fa-user"></i> Perfil</a>
+      <a href="registro.html" class="active"><i class="fa-solid fa-utensils"></i> Registro</a>
+      <a href="progresso.html"><i class="fa-solid fa-chart-line"></i> Progresso</a>
+      <a href="referencias.html"><i class="fa-solid fa-book-open"></i> Referências</a> 
     </nav>
     
     <div class="settings-controls">
       <h4>Visual</h4>
       <div class="control-group">
         <label>Escuro</label>
-        <button id="toggle-dark-mode" class="icon-btn">💡</button>
+        <button id="toggle-dark-mode" class="icon-btn"><i class="fa-solid fa-lightbulb"></i></button>
       </div>
       <div class="control-group">
         <label>Fonte</label>
         <div>
-            <button id="font-size-decrease" class="icon-btn">-</button>
-            <button id="font-size-increase" class="icon-btn">+</button>
+            <button id="font-size-decrease" class="icon-btn">A-</button>
+            <button id="font-size-increase" class="icon-btn">A+</button>
         </div>
       </div>
-      <div style="margin-top: 15px;">
-       <div class="settings-controls">
+    </div>
+    
+    <div class="settings-controls">
         <h4>Dados</h4>
         <div class="control-group">
             <button id="novo-usuario-btn" class="btn secondary full-width">Limpar Dados</button>
         </div>
-    </div>
-  </aside>
-      </div>
     </div>
   </aside>
 
@@ -49,7 +49,7 @@
       </div>
       <div id="auth-container"></div>
     </header>
-
+    
     <div class="grid-cards" style="margin-bottom: 24px;">
         <div class="small-card">
             <h4>Consumido</h4>
@@ -66,14 +66,11 @@
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-        
         <section class="card">
           <h3>Adicionar Alimento</h3>
-          
           <form id="registro-form">
             <label>Descrição do Alimento</label>
             <input type="text" id="descricao" placeholder="Ex: Arroz com Feijão" required />
-
             <div class="input-row">
               <div>
                 <label>Calorias (kcal)</label>
@@ -89,11 +86,9 @@
                 </select>
               </div>
             </div>
-            
             <a href="https://www.tabelatacoonline.com.br/" target="_blank" style="color: #2563eb; text-decoration: underline;">
               <b>consulte calorias aqui</b>
             </a>
-              
             <div style="display:flex; gap:10px; margin-top:20px;">
               <button type="submit" class="btn full-width">➕ Registrar</button>
               <button type="button" id="cancelar-edicao" class="btn secondary hidden">Cancelar</button>
@@ -103,17 +98,13 @@
 
         <section class="card">
           <h3>Refeições de Hoje</h3>
-          <ul id="lista-refeicoes" class="meal-list">
-              </ul>
+          <ul id="lista-refeicoes" class="meal-list"></ul>
         </section>
-
     </div>
   </main>
 
   <script src="main.js"></script>
   <script src="registro.js"></script>
   <script src="auth.js"></script>
-
 </body>
-
 </html>
