@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PERSONALfit — Login</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2964/2964514.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="login-page">
   
   <div class="card login-card">
-    <a href="#" class="login-logo">PERSONALfit</a>
+    <a href="#" class="login-logo" style="text-decoration:none; color: var(--primary-color);">
+        <i class="fa-solid fa-bowl-rice"></i></i> PERSONALfit
+    </a>
     <p class="login-subtitle">Bem-vindo de volta! Acesse sua conta.</p>
 
     <form id="login-form" class="login-form">
@@ -21,9 +25,6 @@
       <div>
         <label for="password">Senha</label>
         <input type="password" id="password" placeholder="********" required />
-        <div style="text-align: right; margin-top: 5px;">
-            <a href="#" class="link-highlight" style="font-size: 0.8em;">Esqueceu a senha?</a>
-        </div>
       </div>
 
       <button type="submit" class="btn full-width">Entrar</button>
@@ -36,7 +37,6 @@
   </div>
 
   <script src="main.js"></script>
-  <script src="login.js"></script>
   <script src="auth.js"></script>
 </body>
 </html>
